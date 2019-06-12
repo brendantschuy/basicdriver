@@ -8,7 +8,7 @@
 
 #define DEVICE_NAME "cdd_device"
 
-#define MSG_LEN 80
+#define MSG_LEN 128
 
 
 MODULE_LICENSE("GPL");
@@ -23,6 +23,7 @@ static int isDeviceOpen = 0;
 //length of message allowed
 static char msg[MSG_LEN];
 static char *msgPtr;
+static char *endPtr;
 
 static int cdd_open(struct inode * mem, struct file * fp)
 {
@@ -70,15 +71,22 @@ static ssize_t cdd_write(struct file * fp, const char * buffer, size_t length, l
 {
 	int i;
 
+	if(endPtr)
+	{
+		msgPtr = endPtr;
+	}
+
 	printk(KERN_INFO "In cdd_write.\n");
 	printk(KERN_INFO "Length of string provided: %ld", length);
 	for(i = 0; i < length; i++)
 	{
-		get_user(msg[i], buffer + 1);
+		get_user(msg[i], buffer + i);
 	}
 	msgPtr = msg;
+	endPtr = &msg[i - 1];
 	return i;
 }
+
 
 //static int major_num;
 //static char *msg_ptr;
@@ -95,6 +103,7 @@ static int __init cdd_init(void)
 {
 	register_chrdev(240, "cdd", &file_ops);
 	printk(KERN_INFO "Initialized module cdd.\n");
+	endPtr = NULL;
 	return 0;
 }
 
