@@ -23,7 +23,7 @@ static int isDeviceOpen = 0;
 //length of message allowed
 static char msg[MSG_LEN];
 static char *msgPtr;
-static char *endPtr;
+static char *ogPtr;
 
 static int cdd_open(struct inode * mem, struct file * fp)
 {
@@ -35,6 +35,7 @@ static int cdd_open(struct inode * mem, struct file * fp)
 	isDeviceOpen++;
 
 	msgPtr = msg;
+	ogPtr = msg;
 
 	printk(KERN_ALERT "Inside the %s function\n", __FUNCTION__);
 
@@ -63,27 +64,28 @@ static ssize_t cdd_read(struct file * fp, char * buffer, size_t length, loff_t *
 		length--;
 		bytesRead++;
 	}
-	//printk("String output: %s", *msgPtr);
 	return bytesRead;
 }
 
 static ssize_t cdd_write(struct file * fp, const char * buffer, size_t length, loff_t * offset)
 {
 	int i;
+	int j;
 
-	if(endPtr)
+	j = 0;
+
+/*	while(msg[j])
 	{
-		msgPtr = endPtr;
-	}
+		j++;
+	}*/
 
 	printk(KERN_INFO "In cdd_write.\n");
 	printk(KERN_INFO "Length of string provided: %ld", length);
-	for(i = 0; i < length; i++)
+	for(i = j; i < length; i++)
 	{
 		get_user(msg[i], buffer + i);
 	}
 	msgPtr = msg;
-	endPtr = &msg[i - 1];
 	return i;
 }
 
@@ -103,7 +105,8 @@ static int __init cdd_init(void)
 {
 	register_chrdev(240, "cdd", &file_ops);
 	printk(KERN_INFO "Initialized module cdd.\n");
-	endPtr = NULL;
+
+	msg[0] = '\0';
 	return 0;
 }
 

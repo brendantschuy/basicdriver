@@ -16,3 +16,8 @@ test:
 	sudo insmod finalproj.ko
 	# Display the kernel log
 	dmesg
+
+userprogs:
+	g++ writer.c -o writer
+	g++ reader.c -o reader
+	g++ fileWriter.c -o fileWriter
